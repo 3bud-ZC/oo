@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>تسجيل دخول — لوحة التحكم</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="container">
+    <section class="card">
+      <h1>مرحبا — سجّل دخولك</h1>
+      <form id="loginForm">
+        <label>البريد الإلكتروني
+          <input type="email" name="email" required value="s-abdallah.ali@zewailcity.edu.eg">
+        </label>
+        <label>كلمة المرور
+          <input type="password" name="password" required value="Abdallah2020=">
+        </label>
+        <button type="submit">دخول</button>
+      </form>
+      <p class="note">سيتم حفظ بيانات الجهاز والموقع عند الدخول.</p>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const body = {
+        email: fd.get('email'),
+        password: fd.get('password')
+      };
+      const resp = await fetch('/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body)
+      });
+      const data = await resp.json();
+      if (data.ok) {
+        window.location = data.redirect;
+      } else {
+        alert('خطأ في بيانات الدخول');
+      }
+    });
+  </script>
+</body>
+</html>

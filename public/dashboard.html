@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>لوحة التحكم</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="container">
+    <section class="card">
+      <h1>تم تسجيل الدخول ✅</h1>
+      <p>نقوم الآن بجمع المعلومات وإرسالها إلى السجل.</p>
+      <div id="status">جاري محاولة الحصول على الموقع...</div>
+      <div class="actions">
+        <button id="logout">خروج</button>
+        <a class="link" href="/logs" target="_blank">عرض السجل (logs.json)</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    async function sendLog(geo) {
+      const payload = {
+        geolocation: geo,
+        additional: {
+          language: navigator.language,
+          platform: navigator.platform,
+        }
+      };
+      await fetch('/log', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+    }
+
+    // get geolocation if user allows
+    const statusEl = document.getElementById('status');
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        const geo = {
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          accuracy: pos.coords.accuracy
+        };
+        statusEl.textContent = 'الموقع تم الحصول عليه — جارٍ الإرسال...';
+        await sendLog(geo);
+        statusEl.textContent = 'تم إرسال البيانات بنجاح ✔️';
+      }, async (err) => {
+        statusEl.textContent = 'رفض الوصول للموقع أو خطأ — سيتم إرسال بقية البيانات بدون الموقع.';
+        await sendLog(null);
+      }, { timeout: 10000 });
+    } else {
+      statusEl.textContent = 'المتصفح لا يدعم موقع الـGeolocation — إرسال الباقي...';
+      sendLog(null);
+    }
+
+    // logout
+    document.getElementById('logout').addEventListener('click', async () => {
+      await fetch('/logout', { method: 'POST' });
+      window.location = '/';
+    });
+  </script>
+</body>
+</html>
